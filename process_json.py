@@ -43,18 +43,23 @@ consolidated_data = {}
 for item in all_raw_data:
     title = item.get("Title")
 
-    # Skip if title is missing or if the item is closed
-    if not title or item.get("px2") == "Fermé":
+    # Skip if title is missing
+    if not title:
         continue
 
     # Initialize new item in consolidated_data if not already present
     if title not in consolidated_data:
         consolidated_data[title] = {
             "name": title,
-            "opening_hours": []
+            "opening_hours": [],
+            "status": item.get("px2", "Unknown")  # Add status field
         }
 
     new_item = consolidated_data[title]
+
+    # Update status if not already set (prioritize "Ouvert" over "Fermé" if mixed)
+    if item.get("px2") == "Ouvert" or not new_item.get("status") or new_item["status"] == "Unknown":
+        new_item["status"] = item.get("px2", "Unknown")
 
     # Image URL (take first non-empty, non-null value)
     if item.get("Image") and item["Image"].strip() not in ["null", ""] and not new_item.get("image_url"):
